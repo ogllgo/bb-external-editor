@@ -28,7 +28,7 @@ export async function main(ns: NS) {
             stockForecastHistory[stockForecastHistory.length - 1].push({sym: ns.stock.getSymbols()[i], mood: forecastMood});
             ns.tprintf(`  ${ns.stock.getSymbols()[i]}: ${ns.formatNumber(costHistory[j][i])}, ${j == 0 ? `${fgCyan}→${reset}` : costHistory[j - 1][i] == costHistory[j][i] ? `${fgCyan}→${reset}` : costHistory[j - 1][i] > costHistory[j][i] ? `${fgRed}↓${reset}` : `${fgGreen}↑${reset}`}`);
         }
-        if (detectFlip(stockForecastHistory, stockVolatilityHistory)) {
+        if (detectFlip(stockForecastHistory)) {
             stockForecastHistory = [];
             stockVolatilityHistory = [];
         }
@@ -65,7 +65,16 @@ function historiesToValues(forecast: forecastHistory, volatility: volatilityHist
     return stocks;
 }
 
-function detectFlip(forecast: forecastHistory, volatility: volatilityHistory) {
+function detectFlip(forecast: forecastHistory) {
+    for (let i = 0; i < forecast.length; i++) {
+        let profile: number = 0;
+        for (let j = 1; j < forecast[i].length; j++) {
+            profile += forecast[i][j].mood - 1;
+            if ((j - 1) / profile) {
+                console.log('AHHHH');
+            }
+        }
+    }
     return false;
 }
 
