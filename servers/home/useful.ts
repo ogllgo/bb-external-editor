@@ -1,11 +1,5 @@
 import { NS } from "@/NetscriptDefinitions";
-
-export async function main(ns: NS) {
-    let key = [1, 2, 65, 765, 245];
-    let data1 = ["23", "ab", "bcc", "nhfg", "234"];
-    let data2 = [999, 234, 590345, 4359, 12];
-    bblSortMany(key, [data1, data2]);
-}
+import { bnNums } from "./consts";
 
 export function scan(ns: NS): string[] {
     
@@ -43,16 +37,11 @@ export function bblSortMany<T extends unknown[]>(key: number[], data: T[]): T[] 
 }
 
 export function evaluateServer(server: string, ns: NS): number {
-    if (ns.fileExists("files/servers.txt")) {
-        if (!JSON.parse(ns.read("files/servers.txt")).includes(server)) {
-            return 0;
-        }
-    }
     if (ns.getHackingLevel() + 2 < ns.getServerRequiredHackingLevel(server)) return 0;
     let levelFactor = Math.log2(ns.getHackingLevel() - ns.getServerRequiredHackingLevel(server) + 2);
     let timeFactor = ns.getWeakenTime(server) / 10;
     let moneyFactor = ns.getServerMaxMoney(server) / 2;
-    return ns.getServerMoneyAvailable(server) / (levelFactor + timeFactor + moneyFactor);
+    return ns.getServerMaxMoney(server) === 0 ? 0 : ns.getServerMoneyAvailable(server) / (levelFactor + timeFactor + moneyFactor);
 }
 
 export function chooseServer(servers: string[], ns: NS) {
@@ -60,6 +49,70 @@ export function chooseServer(servers: string[], ns: NS) {
     return servers[values.indexOf(Math.max(...values))];
 }
 
-export async function makeServerFile(ns: NS) {
+export function openPorts(server: string, ns: NS): number {
+    let portsReq = ns.getServerNumPortsRequired(server);
+    let openedPorts = 0;
+    if (ns.fileExists("brutessh.exe")) {
+        ns.brutessh(server);
+        openedPorts++;
+    }
+    if (ns.fileExists("ftpcrack.exe")) {
+        ns.ftpcrack(server);
+        openedPorts++;
+    }
+    if (ns.fileExists("relaysmtp.exe")) {
+        ns.relaysmtp(server);
+        openedPorts++;
+    }
+    if (ns.fileExists("httpworm.exe")) {
+        ns.httpworm(server);
+        openedPorts++;
+    }
+    if (ns.fileExists("sqlinject.exe")) {
+        ns.sqlinject(server);
+        openedPorts++;
+    }
+    if (openedPorts >= portsReq) {
+        ns.nuke(server);
+    }
+    return openedPorts;
+}
+
+export function makeServerFile(ns: NS) {
     ns.write("files/servers.txt", JSON.stringify(scan(ns)), "w");
+}
+
+export function backdoor(server: string, ns: NS): boolean {
+    if (ns.getServer(server).backdoorInstalled) {
+        return true;
+    }
+    if (hasNode(4, ns)) {
+        let path: string[] = [server];
+        if (openPorts(server, ns) < ns.getServerNumPortsRequired(server) || ns.getServerRequiredHackingLevel(server) > ns.getHackingLevel()) {
+            return false;
+        }
+        let toScan = server;
+        while (ns.scan(toScan)[0] !== "home") {
+            path.push(ns.scan(toScan)[0]);
+            toScan = ns.scan(toScan)[0];
+        }
+        path.push("home");
+        path.reverse();
+        ns.write(`temp/backdoor${server}.js`, `
+export async function main(ns) {
+    for (const connection of ${JSON.stringify(path)}) {
+        ns.singularity.connect(connection);
+    }
+    await ns.singularity.installBackdoor();
+    ns.toast("Installed backdoor: ${server}");
+    ns.singularity.connect("home");
+}`, "w");
+        ns.run(`temp/backdoor${server}.js`);
+        return true;
+    }
+    return ns.getServer(server).backdoorInstalled;
+}
+
+export function hasNode(nodeNum: bnNums, ns: NS): boolean {
+    return ns.getResetInfo().ownedSF.get(nodeNum) !== undefined || ns.getResetInfo().currentNode == nodeNum;
 }
