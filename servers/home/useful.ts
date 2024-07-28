@@ -1,4 +1,4 @@
-import { NS } from "@/NetscriptDefinitions";
+import { NS, Person } from "@/NetscriptDefinitions";
 import { bnNums } from "./consts";
 
 export function scan(ns: NS): string[] {
@@ -11,10 +11,9 @@ export function scan(ns: NS): string[] {
 }
 
 /**
- * @param T - PASS IN THE TYPE OF DATA
  * @param key - What to sort the values by
  * @param data - What data should be sorted by key
- * @returns key and data sorted by the values in key
+ * @returns data sorted by the values in key
  */
 export function bblSortMany<T extends unknown[]>(key: number[], data: T[]): T[] {
 
@@ -36,6 +35,21 @@ export function bblSortMany<T extends unknown[]>(key: number[], data: T[]): T[] 
     return [...data];
 }
 
+export function fixPlayerSkills(player: Person): Person {
+    function calculateSkill(exp: number, mult = 1): number {
+        const value = Math.floor(mult * (32 * Math.log(exp + 534.6) - 200));
+        return Math.max(value, 1);
+    }
+    player.skills.hacking = calculateSkill(player.exp.hacking, player.mults.hacking);
+    player.skills.agility = calculateSkill(player.exp.agility, player.mults.agility);
+    player.skills.charisma = calculateSkill(player.exp.charisma, player.mults.charisma);
+    player.skills.defense = calculateSkill(player.exp.defense, player.mults.defense);
+    player.skills.strength = calculateSkill(player.exp.strength, player.mults.strength);
+    player.skills.dexterity = calculateSkill(player.exp.dexterity, player.mults.dexterity);
+    player.skills.intelligence = calculateSkill(player.exp.intelligence);
+    return player;
+}
+
 export function evaluateServer(server: string, ns: NS): number {
     if (ns.getHackingLevel() + 2 < ns.getServerRequiredHackingLevel(server)) return 0;
     let levelFactor = Math.log2(ns.getHackingLevel() - ns.getServerRequiredHackingLevel(server) + 2);
@@ -44,9 +58,9 @@ export function evaluateServer(server: string, ns: NS): number {
     return ns.getServerMaxMoney(server) === 0 ? 0 : ns.getServerMoneyAvailable(server) / (levelFactor + timeFactor + moneyFactor);
 }
 
-export function chooseServer(servers: string[], ns: NS) {
+export function chooseServer(ns: NS, servers: string[] = scan(ns)): string {
     let values = servers.map(serv => evaluateServer(serv, ns));
-    return servers[values.indexOf(Math.max(...values))];
+    return Math.max(...values) > 0 ? servers[values.indexOf(Math.max(...values))] : "joesguns";
 }
 
 export function openPorts(server: string, ns: NS): number {

@@ -1,7 +1,9 @@
 import { NS } from "@/NetscriptDefinitions";
-import { table } from "./printStyle";
-import { fgGreen, fgRed, fgYellow } from "./printStyle";
 export async function main(ns: NS) {
-    ns.tail();
-    table(ns, [["abc", "ab", "aaa", "b"], ["bc", "bc", "aaaa"], ["123", "1"]], [[fgGreen, fgYellow], [fgRed]]);
+    const beforeSec = ns.getServerSecurityLevel("n00dles");
+    const waitTime = ns.getGrowTime("n00dles");
+    ns.run("toastTime.js", 1, false, waitTime, 1000, false, "info", " until operation is complete");
+    await ns.sleep(waitTime);
+    const afterSec = ns.getServerSecurityLevel("n00dles");
+    ns.tprint(`before: ${beforeSec}, after: ${afterSec}, difference: ${afterSec - beforeSec}`);
 }

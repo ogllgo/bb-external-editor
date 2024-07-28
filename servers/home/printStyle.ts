@@ -29,7 +29,14 @@ export const bgGray = "\x1b[100m";
 export const WIDTH_PER_CHARACTER = 9.7;
 export const HEIGHT_PER_CHARACTER = 17;
 
-export function getColor(min: number, max: number, value: number): string {
+type colour = {
+    red: number,
+    green: number,
+    blue: number
+}
+export function getColor(min: number, max: number, value: number, numberValue: false): string
+export function getColor(min: number, max: number, value: number, numberValue: true): colour
+export function getColor(min: number, max: number, value: number, numberValue: boolean = false): string | colour {
     value = Math.max(min, Math.min(max, value));
     const normalizedValue = (value - min) / (max - min);
     const hue = (1 - normalizedValue) * 120;
@@ -54,6 +61,12 @@ export function getColor(min: number, max: number, value: number): string {
     r = Math.round((r + m) * 255);
     g = Math.round((g + m) * 255);
     b = Math.round((b + m) * 255);
+    if (numberValue) {
+        return {red: r,
+            green: g,
+            blue: b
+        };
+    }
     return `\x1b[38;2;${r};${g};${b}m`;
 }
 

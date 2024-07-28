@@ -23,18 +23,18 @@ export async function main(ns: NS) {
             data[i].push(server);
             colours[i].push(fgGreen);
             data[i].push(`${ns.formatNumber(ns.getServerMoneyAvailable(server), 1)} / ${ns.formatNumber(ns.getServerMaxMoney(server), 1)} (${ns.formatPercent(Number.isNaN(ns.getServerMaxMoney(server) / ns.getServerMoneyAvailable(server)) ? 0 : ns.getServerMoneyAvailable(server) / ns.getServerMaxMoney(server))})`);
-            colours[i].push(getColor(0, ns.getServerMaxMoney(server), ns.getServerMoneyAvailable(server)));
+            colours[i].push(getColor(0, ns.getServerMaxMoney(server), ns.getServerMoneyAvailable(server), false));
             data[i].push(`${ns.formatNumber(ns.getServerSecurityLevel(server), 1)} / ${ns.formatNumber(ns.getServerMinSecurityLevel(server), 1)} (${ns.formatPercent(Number.isNaN(ns.getServerSecurityLevel(server) / ns.getServerMinSecurityLevel(server)) || ns.getServerMaxMoney(server) === 0 ? 0 : ns.getServerSecurityLevel(server) / ns.getServerMinSecurityLevel(server))})`);
-            colours[i].push(getColor(ns.getServerMinSecurityLevel(server), 99, ns.getServerSecurityLevel(server)));
+            colours[i].push(getColor(ns.getServerMinSecurityLevel(server), 99, ns.getServerSecurityLevel(server), false));
             data[i].push(`${openPorts(server, ns)} / ${ns.getServerNumPortsRequired(server)}`);
-            colours[i].push(getColor(0, ns.getServerNumPortsRequired(server), ns.getServerNumPortsRequired(server) - openPorts(server, ns)));
+            colours[i].push(getColor(0, ns.getServerNumPortsRequired(server), ns.getServerNumPortsRequired(server) - openPorts(server, ns), false));
             data[i].push(`${thrownBD.indexOf(server) !== -1 ? "YES" : "NO"}`);
             colours[i].push(ns.getServer(server).backdoorInstalled ? fgGreen : fgRed);
             data[i].push(`${ns.formatRam(ns.getServerUsedRam(server))} / ${ns.formatRam(ns.getServerMaxRam(server))}`);
-            colours[i].push(getColor(0, ns.getServerMaxRam(server), ns.getServerUsedRam(server)));
+            colours[i].push(getColor(0, ns.getServerMaxRam(server), ns.getServerUsedRam(server), false));
         }
-        ns.clearLog();
         table(ns, headers.concat(data), headerColours.concat(colours));
+        ns.clearLog();
         await ns.sleep(10);
     }
 }
