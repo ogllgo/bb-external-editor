@@ -2,32 +2,35 @@
 function scan(ns) {
     let servs = ["home", ...ns.scan("home")];
     for (let i = 1; i < servs.length; i++) {
-      servs.push(...ns.scan(servs[i]).slice(1));
+        servs.push(...ns.scan(servs[i]).slice(1));
     }
     return servs;
 }
+
 function bblSortMany(key, data) {
     for (let i = 0; i < key.length; i++) {
-      for (let j = 0; j < key.length - i - 1; j++) {
-        if (key[j] > key[j + 1]) {
-          [key[j], key[j + 1]] = [key[j + 1], key[j]];
-          for (let k = 0; k < data.length; k++) {
-            const currentArr = data[k];
-            [currentArr[j], currentArr[j + 1]] = [currentArr[j + 1], currentArr[j]];
-          }
+        for (let j = 0; j < key.length - i - 1; j++) {
+            if (key[j] > key[j + 1]) {
+                [key[j], key[j + 1]] = [key[j + 1], key[j]];
+                for (let k = 0; k < data.length; k++) {
+                    const currentArr = data[k];
+                    [currentArr[j], currentArr[j + 1]] = [currentArr[j + 1], currentArr[j]];
+                }
+            }
         }
-      }
     }
     return [...data];
 }
+
 function evaluateServer(server, ns) {
     if (ns.getHackingLevel() + 2 < ns.getServerRequiredHackingLevel(server))
-      return 0;
+        return 0;
     let levelFactor = Math.log2(ns.getHackingLevel() - ns.getServerRequiredHackingLevel(server) + 2);
     let timeFactor = ns.getWeakenTime(server) / 10;
     let moneyFactor = ns.getServerMaxMoney(server) / 2;
     return ns.getServerMaxMoney(server) === 0 ? 0 : ns.getServerMoneyAvailable(server) / (levelFactor + timeFactor + moneyFactor);
 }
+
 function openPorts(server, ns) {
     let portsReq = ns.getServerNumPortsRequired(server);
     let openedPorts = 0;
@@ -56,6 +59,7 @@ function openPorts(server, ns) {
     }
     return openedPorts;
 }
+
 function backdoor(server, ns) {
     if (ns.getServer(server).backdoorInstalled) {
         return true;
@@ -86,9 +90,11 @@ export async function main(ns) {
     }
     return ns.getServer(server).backdoorInstalled;
 }
+
 function hasNode(nodeNum, ns) {
     return ns.getResetInfo().ownedSF.get(nodeNum) !== void 0 || ns.getResetInfo().currentNode == nodeNum;
 }
+
 function getColor(min, max, value, numberValue = false) {
     value = Math.max(min, Math.min(max, value));
     const normalizedValue = (value - min) / (max - min);
@@ -122,6 +128,7 @@ function getColor(min, max, value, numberValue = false) {
     }
     return `\x1B[38;2;${r};${g};${b}m`;
 }
+
 const doc = eval("document");
 const win = eval("window");
 async function terminalCommand(inputValue) {
@@ -132,6 +139,7 @@ async function terminalCommand(inputValue) {
     terminal.focus();
     await terminal[Object.keys(terminal)[1]].onKeyDown({ key: "Enter", preventDefault: () => 0 });
 }
+
 async function connect(server, ns) {
     let servers = [server];
     let toScan = server;
@@ -151,7 +159,8 @@ async function connect(server, ns) {
     for (let i = 1; i < servers.length; i++)
         command += "; connect " + servers[i];
     await terminalCommand(command);
-  }
+}
+
 function makeServerElement(server, ns) {
     const serverText = doc.createElement("div");
     serverText.style.fontSize = parseInt(win.getComputedStyle(doc.querySelector(`.MuiTypography-root.MuiTypography-h6[title="injectTest.js "]`)).getPropertyValue("font-size"), 10) - 5 + "px";
@@ -161,6 +170,7 @@ function makeServerElement(server, ns) {
     serverText.classList.add("server-element");
     return serverText;
 }
+
 async function manRoot(server, ns) {
     await connect(server, ns);
     let openedPorts = [];
@@ -192,8 +202,9 @@ async function manRoot(server, ns) {
     for (const method of openedPorts) {
         ns.tprintRaw(`Opening port with ${method}.exe`);
     }
-  }
-  function makeHTMLTable(servers, data, ns, backdoorServers = void 0) {
+}
+
+function makeHTMLTable(servers, data, ns, backdoorServers = void 0) {
     const table = doc.createElement("table");
     table.style.width = "800px";
     const headerRow = doc.createElement("tr");
@@ -266,6 +277,7 @@ async function manRoot(server, ns) {
     table.style.borderColor = "red";
     return table;
 }
+
 function makeServerData(servers, ns) {
     const data = [];
     for (const server of servers) {
@@ -283,6 +295,7 @@ function makeServerData(servers, ns) {
     }
     return data;
 }
+
 async function main(ns) {
     const factionServers = ["CSEC", "avmnite-02h", "I.I.I.I", "run4theh111z", "w0r1d_d43m0n", "fulcrumassets"];
     ns.disableLog("ALL");
@@ -323,6 +336,7 @@ async function main(ns) {
         await ns.asleep(1e3);
     }
 }
+
 export {
     main
 };
