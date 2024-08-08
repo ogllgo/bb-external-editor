@@ -38,15 +38,19 @@ export async function main(ns) {
     // <--------> hack
     // <---------> grow
     // <----------> weaken
-    // right now, the goal is that we get a single cycle of hack/grow/weak
-    
 
+    // goal is to compute the values and timings for a single cycle of 
+    // <-> hack (num)
+    // <--> grow (num)
+    // <---> weaken (num)
+    // so that it finishes quicklyv
 }
 // so we want to hack enough money to take ~25% [0.25]
 // then grow enough to bring it back to full
 // then weaken enough to bring security back
-function getThreadsForOneCycle(server: Server, player: Person, ns: NS) {
-
+function getThreadsForOneCycle(server: Server, player: Person, totalRamAvailable: number, ns: NS): {hack: number, grow: number, weak: number, failed: boolean} {
+    const startingPlayer = player;
+    const startingServer = server;
     let hackEffect: number = ns.formulas.hacking.hackPercent(server, player);
     let expChange: number = ns.formulas.hacking.hackExp(server, player);
     let hackThreads: number = Math.ceil(0.25 / hackEffect);
@@ -60,6 +64,36 @@ function getThreadsForOneCycle(server: Server, player: Person, ns: NS) {
     expChange = ns.formulas.hacking.hackExp(server, player);
     player.exp.hacking += expChange * growThreads;
     server.moneyAvailable += growThreads * growEffect;
-    server.hackDifficulty = min(server.hackDifficulty + 1)
+    server.hackDifficulty = min(server.hackDifficulty + growThreads * 1.004, 99);
+
+    let weakThreads: number = Math.floor((server.hackDifficulty - server.minDifficulty) / 0.05);
+    while (hackThreads + growThreads + weakThreads > totalRamAvailable && hackThreads > 0) {
+        player = startingPlayer;
+        server = startingServer;
+        hackThreads--;
+
+        server.hackDifficulty = min(server.hackDifficulty + 0.002 * hackThreads, 99);
+        player.exp.hacking += expChange * hackThreads;
+        server.moneyAvailable -= hackEffect * hackThreads;
+        player = fixPlayerSkills(player);
+
+        growThreads = ns.formulas.hacking.growThreads(server, player, server.moneyMax);
+        growEffect = ns.formulas.hacking.growAmount(server, player, growThreads);
+        expChange = ns.formulas.hacking.hackExp(server, player);
+        player.exp.hacking += expChange * growThreads;
+        server.moneyAvailable += growThreads * growEffect;
+        server.hackDifficulty = min(server.hackDifficulty + growThreads * 1.004, 99);
+
+        weakThreads = Math.floor((server.hackDifficulty - server.minDifficulty) / 0.05);
+    }
+    return {
+        hack: hackThreads,
+        grow: growThreads,
+        weak: weakThreads,
+        failed: hackThreads === 0
+    };  
 }
 
+function sum(nums: number[]): number {
+    return nums.reduce((currentSum, current) => currentSum += current, 0);
+}

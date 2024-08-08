@@ -3,7 +3,7 @@ const max = Math.max;
 const min = Math.min;
 export async function main(ns: NS) {
     if (ns.args.length === 0) {
-        ns.tprint("when making toasts, no arguments were specified. It goes:\n\nDo we print data [true] or count down [false]\nTotal time between message\nDelay between messages\nWhether we toast [true] or print [false]\nthe data to display\n\n");
+        ns.tprint("when making toasts   , no arguments were specified. It goes:\n\nDo we print data [true] or count down [false]\nTotal time between message\nDelay between messages\nWhether we toast [true] or print [false]\nthe data to display\n\n");
         ns.toast("when making toasts, no arguments were specified. Check the terminal.", "error", 5000);
         ns.writePort(ns.pid, "FAIL");
         return;

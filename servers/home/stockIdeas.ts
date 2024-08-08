@@ -7,14 +7,19 @@ type stock = {
     symbol: string,              // the stock's name
 }
 
-type forecastHistory = {sym: string, mood: -1|0|1|2}[][];
-type volatilityHistory = {sym: string, value: number}[][];
+type loneForecastHistory = {sym: string, mood: -1|0|1|2}[];
+type loneVolatilityHistory = {sym: string, value: number}[];
+
 
 const maxHistoryLength = 30;
 export async function main(ns: NS) {
+    let preflip: loneForecastHistory[] = [];
+    while (!detectFlip(preflip)) {
+        
+    }
     let costHistory: number[][] = [];
-    let stockForecastHistory: forecastHistory = [];
-    let stockVolatilityHistory: volatilityHistory = [];
+    let stockForecastHistory: loneForecastHistory[] = [];
+    let stockVolatilityHistory: loneVolatilityHistory[] = [];
     for (let j = 0;; j++) {
         costHistory.push(await nextStockTick(ns));
         if (costHistory.length > maxHistoryLength) costHistory = costHistory.slice(1);
@@ -40,39 +45,51 @@ export async function main(ns: NS) {
     }
 }
 
-function historiesToValues(forecast: forecastHistory, volatility: volatilityHistory): stock[] {
-    let stocks: (stock)[] = [];
-    for (let i = 0; i < volatility.length; i++) {
-        if (stocks.length === i) stocks.push({estimatedForecast: 0, estimatedVolatility: 0, symbol: ""});
-        let m = 0;
-        let k = 0;
-        for (let j = 0; j < volatility[i].length; j++) {
-            m = Math.max(m, volatility[i][k].value);
-            k = Math.max(k, j);
-        }
-        stocks[i].estimatedVolatility = m + m/k - 0; 
-        // https://en.wikipedia.org/wiki/German_tank_problem
-        // The normal formula is m+m/k+1, but the 1 is meant to be the lowest possible value.
-        // We know that the lowest [theoretical] value is 0, so we subtract 0. With any luck,
-        // something will go "hey.. that does nothing!" and skip it.
-
-        let success = 0;
-        for (let j = 0; j < forecast[i].length; j++) {
-            success += forecast[i][j].mood - 1;
-        }
-        stocks[i].estimatedForecast = success / forecast.length;
+function historiesToValues(forecasts: loneForecastHistory[], volatilites: loneVolatilityHistory[]): stock[] {
+    let stocks: stock[] = [];
+    for (let i = 0; i < forecasts.length; i++) {
+        stocks.push(historyToValue(forecasts[i], volatilites[i]));
     }
     return stocks;
 }
 
-function detectFlip(forecast: forecastHistory) {
+function historyToValue(forecast: loneForecastHistory, volatility: loneVolatilityHistory): stock {
+    let stock: stock = {estimatedForecast: 0, estimatedVolatility: 0, symbol: volatility[0].sym};
+    let m = 0;
+    let k = 0;
+    for (let i = 0; i < volatility.length; i++) {
+        m = Math.max(m, volatility[i].value);
+        k = Math.max(k, i);
+    }
+    stock.estimatedVolatility = m + m/k - 0;
+    // https://en.wikipedia.org/wiki/German_tank_problem
+    // The normal formula is m+m/k+1, but the 1 is meant to be the lowest possible value.
+    // We know that the lowest [theoretical] value is 0, so we subtract 0. With any luck,
+    // something will go "hey.. that does nothing!" and skip it.
+
+    let success = 0;
     for (let i = 0; i < forecast.length; i++) {
-        let profile: number = 0;
-        for (let j = 1; j < forecast[i].length; j++) {
-            profile += forecast[i][j].mood - 1;
-            if ((j - 1) / profile) {
-                console.log('AHHHH');
-            }
+        success += forecast[i].mood - 1;
+    }
+    stock.estimatedForecast = success / forecast.length;
+    return stock;
+}
+
+function detectFlip(forecast: loneForecastHistory[]) {
+    let predictions: number[] = [];
+    let numProbablyFlipped: number = 0;
+    for (let i = 0; i < forecast.length; i++) {
+        // i to index the forecasts,
+        // j to index any forecast
+        let success = 0;
+        for (let j = 0; j < forecast[i].length - 1; j++) { // don't include the last on in our predictions
+            success += forecast[i][j].mood - 1;
+        }
+        predictions.push(success / forecast[i].length);
+    }
+    for (let i = 0; i < predictions.length; i++) {
+        for (let j = 0; j < 0;j) {
+
         }
     }
     return false;

@@ -97,7 +97,6 @@ function makeHTMLTable(servers: Element[], data: ServerData[], ns: NS, backdoorS
         serverCell.appendChild(clonedServer);
         serverCell.addEventListener('click', async function() {
             manRoot(server.textContent, ns);
-            
         });
         row.appendChild(serverCell);
 
