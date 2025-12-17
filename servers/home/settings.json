@@ -1,0 +1,6 @@
+{
+    "home_reserved_ram": 100,
+    "home_reserved_money": 1e7,
+    "hack_target": "joesguns",
+    "pserv_prefix": "ps"
+}

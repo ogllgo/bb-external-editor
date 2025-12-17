@@ -17,9 +17,11 @@ export type BitNode = BitNodeMap[keyof BitNodeMap];
  * It is on the startup sript's shoulders to initialise this with the value from `identifyBitnode()`
  * 
  * Do not write to this variable. If properly initialised, it will never desync.
-*/ 
+*/
 export let gCurrentNode: Readonly<BitNode>;
-
+export function setGCurrentNode(ns: NS) {
+    gCurrentNode = identifyBitnode(ns);
+}
 /**
  * Identifies the current bitnode using minimal RAM
  */
@@ -70,10 +72,6 @@ export const defaultBitNodeMults: BitNodeMultipliers = {
     InfiltrationMoney: 1,
     InfiltrationRep: 1,
     ManualHackMoney: 1,
-    PurchasedServerCost: 1,
-    PurchasedServerLimit: 1,
-    PurchasedServerMaxRam: 1,
-    PurchasedServerSoftcap: 1,
     FavorToDonateToFaction: 1,
     ScriptHackMoney: 1,
     ScriptHackMoneyGain: 1,
@@ -86,6 +84,7 @@ export const defaultBitNodeMults: BitNodeMultipliers = {
     StaneksGiftPowerMultiplier: 1,
     StaneksGiftExtraSize: 0,
     WorldDaemonDifficulty: 1,
+    CloudServerCost: 1,
 };
 /**
  * Gets the bitnode multipliers for a given bitnode. Replacement for `ns.getBitNodeMultipliers` (4gb)

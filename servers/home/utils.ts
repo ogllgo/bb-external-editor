@@ -1,12 +1,5 @@
 import { Server } from "@/NetscriptDefinitions";
-import { calculateInteligenceBonus } from "./forms/intelligence";
-type JSONValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JSONValue[]
-  | { [key: string]: JSONValue };
+
 export function getAllServers(ns: NS) {
   let servs = ["home", ...ns.scan("home")];
   for (let i = 1; i < servs.length; i++) {

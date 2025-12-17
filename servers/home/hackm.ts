@@ -1,12 +1,13 @@
-import { getAllServers, hasAccess, roundPrecision, getRemainingDifficulty, getRemainingRam, getSetting, getBestServer } from "./utils";
+import { getAllServers, hasAccess, roundPrecision, getRemainingDifficulty, getRemainingRam, getBestServer } from "./utils";
 import { COLOR_RED, COLOR_GREEN, COLOR_YELLOW, COLOR_WHITE } from "./colors";
 import { Server } from "@/NetscriptDefinitions";
+import SETTINGS from "./settings.json";
 
 export async function main(ns: NS) {
   let lastusedservers: number = 0;
   let timeSinceServerChange: number = 0;
   const servs: string[] = getAllServers(ns);
-  let target: Server = ns.getServer(getSetting(ns, "hack_target") ?? getBestServer(ns));
+  let target: Server = ns.getServer(getBestServer(ns));
   ns.disableLog("ALL");
   for (const serv of servs) {
     ns.scp(["shared/hack.js", "shared/weak.js", "shared/grow.js"], serv);
@@ -21,7 +22,7 @@ export async function main(ns: NS) {
     ns.clearLog();
 
     if (timeSinceServerChange >= 5 * 60 * 1000) {
-      target.hostname = getSetting(ns, "hack_target") ?? getBestServer(ns);
+      target.hostname = getBestServer(ns);
     }
     target = ns.getServer(target.hostname);
 
